@@ -9,9 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@base-ui/react": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+=======
+>>>>>>> a5d103b (feat(frontend): implemenation of scanning text page)
     "lucide-react": "^1.24.0",
     "next": "16.2.10",
     "react": "19.2.4",
