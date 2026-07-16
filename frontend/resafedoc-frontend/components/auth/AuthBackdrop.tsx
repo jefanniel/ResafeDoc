@@ -1,9 +1,3 @@
-/**
- * Latar belakang saat modal auth tampil: pratinjau non-interaktif dari
- * tampilan /scan, diredupkan — meniru pola "modal di atas produk" pada
- * referensi desain, tanpa memakai data atau UI sungguhan (agar tidak
- * membingungkan dengan halaman asli yang butuh sesi login).
- */
 export default function AuthBackdrop() {
   return (
     <div

@@ -65,7 +65,6 @@ export default function UploadPanel({
         />
 
         {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={preview}
             alt="Pratinjau resep yang dipilih"

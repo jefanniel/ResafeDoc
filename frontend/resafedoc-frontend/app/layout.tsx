@@ -23,7 +23,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ResafeDoc — Periksa Keamanan Resep",
+  title: "ResafeDoc",
   description:
     "Pindai resep dokter dan periksa dosis, frekuensi, serta kontraindikasi sebelum diminum.",
 };
@@ -33,7 +33,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

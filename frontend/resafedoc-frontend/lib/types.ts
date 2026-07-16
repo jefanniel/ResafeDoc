@@ -1,7 +1,3 @@
-// Tipe-tipe ini mengikuti persis kontrak yang didokumentasikan backend
-// (backend.md, Bagian 5). Jangan menambah field opsional "andaikan ada" —
-// kalau backend menambah field baru, update di sini dulu.
-
 export interface FieldConfidence {
   nama_obat: number;
   dosis: number;
@@ -72,7 +68,6 @@ export interface HealthResponse {
   supabase_connected: boolean;
 }
 
-// Helper: apakah sebuah scan berjalan dalam mode simulasi (Gemini tidak berhasil dihubungi).
 export function isMockSource(source: string): boolean {
   return source.startsWith("mock_fallback_");
 }

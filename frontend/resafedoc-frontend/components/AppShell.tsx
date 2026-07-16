@@ -16,7 +16,6 @@ export default function AppShell({
   const isBare = BARE_PREFIXES.some((p) => pathname.startsWith(p));
 
   if (isBare) {
-    // Halaman auth tampil sebagai modal full-bleed, tanpa navbar/container.
     return <>{children}</>;
   }
 

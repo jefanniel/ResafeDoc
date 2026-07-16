@@ -18,12 +18,6 @@ const STAMP_CONFIG: Record<
   },
 };
 
-/**
- * Elemen signature ResafeDoc: keputusan rule engine divisualisasikan sebagai
- * stempel resep — seperti stempel apoteker/dokter di atas kertas resep,
- * bukan badge generik. Rotasi tetap (-7deg) dan tekstur cincin ganda meniru
- * stempel tinta fisik.
- */
 export default function Stamp({
   aman,
   className = "",

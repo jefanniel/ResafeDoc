@@ -16,10 +16,6 @@ function ConfidenceMark({ value }: { value: number }) {
   );
 }
 
-/**
- * Ditata seperti lembar hasil laboratorium: label kolom kecil, data dalam
- * monospace agar angka dosis/frekuensi mudah dipindai mata secara vertikal.
- */
 export default function ExtractionTable({ items }: { items: ExtractionItem[] }) {
   if (items.length === 0) {
     return <p className="text-sm text-muted">Tidak ada item obat yang terbaca dari resep ini.</p>;

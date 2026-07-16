@@ -94,7 +94,6 @@ export default function AuthModal({ initialMode }: { initialMode: Mode }) {
 
   return (
     <div className="relative z-10 flex w-full max-w-3xl overflow-hidden rounded-card border border-line bg-white shadow-card">
-      {/* Panel kiri — identitas & sambutan, konsisten dengan bahasa visual Stamp */}
       <div className="hidden w-[42%] flex-col justify-between bg-paper p-8 sm:flex">
         <div>
           <BrandMark />
@@ -129,7 +128,6 @@ export default function AuthModal({ initialMode }: { initialMode: Mode }) {
         </p>
       </div>
 
-      {/* Panel kanan — form */}
       <div className="w-full p-8 sm:w-[58%]">
         <h1 className="font-display text-2xl font-700 text-ink">
           {mode === "login" ? "Masuk" : "Buat akun"}

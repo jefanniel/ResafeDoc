@@ -5,8 +5,6 @@ const PUBLIC_PATHS = ["/login", "/signup"];
 
 type CookieToSet = { name: string; value: string; options: CookieOptionsWithName };
 
-// Menyegarkan sesi Supabase pada setiap request dan mengarahkan pengguna
-// yang belum login menjauh dari halaman terproteksi (/scan, /history).
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 

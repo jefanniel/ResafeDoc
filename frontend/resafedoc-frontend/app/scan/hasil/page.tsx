@@ -80,7 +80,6 @@ export default function HasilScanPage() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
           {result.image_url && (
             <div className="relative shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={result.image_url}
                 alt="Resep yang dipindai"

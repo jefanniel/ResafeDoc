@@ -1,10 +1,5 @@
 import type { ValidationIssue } from "@/lib/types";
 
-/**
- * Menampilkan warnings apa adanya — termasuk saat aman = true, karena
- * warnings dapat berisi item meskipun status keseluruhan tetap aman
- * (mis. peringatan frekuensi ringan). Lihat backend.md Bagian 5.1.
- */
 export default function WarningList({ items }: { items: ValidationIssue[] }) {
   if (items.length === 0) return null;
 

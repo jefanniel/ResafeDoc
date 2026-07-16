@@ -14,7 +14,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.config import settings
 from app.core.validator import validate_extraction
-from app.db.supabase import get_supabase_client
+from app.db.supabase import get_supabase_client, get_user_storage_client
 from app.models.schemas import (
     HistoryResponse,
     ScanHistoryItem,
@@ -51,17 +51,19 @@ def _compute_overall_confidence(extraction) -> float:
     return min(scores) if scores else 0.0
 
 
-def _generate_transient_url(user_client, path: str, expires_in: int = 3600) -> str:
+def _generate_transient_url(user_storage, path: str, expires_in: int = 3600) -> str:
     """
     Mengubah path internal private storage menjadi signed URL transien
     yang bisa diakses oleh browser front-end secara aman.
+
+    `user_storage` adalah objek dari get_user_storage_client(token), BUKAN
+    lagi `user_client.storage` bawaan - lihat catatan fix di app/db/supabase.py
+    soal kenapa client.storage bawaan tidak reliable untuk token injection.
     """
     if not path or path.startswith("failed_upload/"):
         return path
     try:
-        # FIX GAP-1: pakai settings.storage_bucket, bukan literal "prescriptions"
-        # hardcoded terpisah di sini - biar cuma ada SATU sumber kebenaran nama bucket.
-        signed_res = user_client.storage.from_(settings.storage_bucket).create_signed_url(path, expires_in)
+        signed_res = user_storage.from_(settings.storage_bucket).create_signed_url(path, expires_in)
         if isinstance(signed_res, dict):
             return signed_res.get("signedURL") or signed_res.get("signed_url") or path
         return getattr(signed_res, "signed_url", getattr(signed_res, "signedURL", str(signed_res)))
@@ -118,7 +120,7 @@ async def scan_prescription(
     user_id, token = user_ctx
     user_client = get_supabase_client(token=token)
 
-    # 1. Validasi Dasar File 
+    # 1. Validasi Dasar File
     allowed_types = {"image/jpeg", "image/png", "image/webp", "image/jpg"}
     if file.content_type not in allowed_types:
         raise HTTPException(
@@ -152,17 +154,11 @@ async def scan_prescription(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Gagal mengekstrak resep via AI. Coba lagi nanti.")
 
     # 3. Validasi Rule Engine
-    # FIX KRITIS-1: token sekarang ikut dikirim ke rule engine, supaya semua
-    # query di validator.py (lookup obat, kontraindikasi, riwayat) berjalan
-    # dengan identitas user yang benar, bukan diam-diam pakai anon client.
     logger.info(f"Menjalankan rule engine untuk {len(extraction_result.items)} item obat.")
     validation_result = validate_extraction(extraction_result, user_id, token=token)
 
-    # ── 3.5. Penegakan Threshold Skor Keyakinan
+    # 3.5. Penegakan Threshold Skor Keyakinan
     if not extraction_result.items:
-        # FIX BUG-6: kasus "tidak ada obat terbaca" itu beda akar masalah dari
-        # "confidence rendah karena buram" - jangan disamakan pesannya, supaya
-        # user tahu perlu foto ulang, bukan cuma "konfirmasi ke apoteker".
         overall_confidence = 0.0
         validation_result.warnings.append(
             ValidationWarning(
@@ -182,21 +178,24 @@ async def scan_prescription(
                 ValidationWarning(
                     level="warning",
                     kode="CONFIDENCE_RENDAH",
-                    # CATATAN GAP-5: teks ini belum diverifikasi kata-per-kata terhadap
-                    # PRD teknis 4.7 (dokumen itu belum di-upload ke gw) - cek ulang
-                    # wording persis sebelum final kalau ada versi PRD yang lebih detail.
                     pesan="Tulisan resep terdeteksi kurang jelas atau buram. Harap lakukan konfirmasi manual ke apoteker atau dokter.",
                     obat_terkait="",
                 )
             )
-            # Menurunkan status aman resep demi prinsip AI Safety / Fail-Closed
             validation_result.aman = False
 
     # 4. Upload Berkas ke Supabase Storage Bucket
-    image_storage_path = f"manual_audit/{user_id}/{uuid.uuid4()}_{file.filename or 'prescription.jpg'}"
+    # FIX: path 2 segmen (user_id/filename) supaya cocok dengan policy
+    # (storage.foldername(name))[1] = auth.uid()::text
+    image_storage_path = f"{user_id}/{uuid.uuid4()}_{file.filename or 'prescription.jpg'}"
+
+    # FIX: pakai storage client TERPISAH dengan token di-set eksplisit sejak
+    # instansiasi, bukan client.storage bawaan yang token-nya rawan tidak
+    # nempel dengan benar (lihat catatan di app/db/supabase.py).
+    user_storage = get_user_storage_client(token)
+
     try:
-        # FIX GAP-1: pakai settings.storage_bucket, bukan literal "prescriptions".
-        user_client.storage.from_(settings.storage_bucket).upload(
+        user_storage.from_(settings.storage_bucket).upload(
             path=image_storage_path,
             file=image_bytes,
             file_options={"content-type": file.content_type}
@@ -214,14 +213,8 @@ async def scan_prescription(
             "image_url": image_storage_path,  # Simpan path internal konstan ke DB
             "hasil_ocr": extraction_result.model_dump(),
             "hasil_validasi": validation_result.model_dump(),
-            "confidence_score": overall_confidence,  # Skor agregat asli (Bug Fix)
-            # FIX BUG-2: pakai property is_warning (warnings ATAU errors apapun),
-            # bukan `not aman` - supaya warning box tetap muncul di frontend
-            # meskipun statusnya masih "aman" (mis. warning frekuensi ringan).
+            "confidence_score": overall_confidence,
             "is_warning": validation_result.is_warning,
-            # FIX: pakai property warning_reason bawaan schema (sudah merangkum
-            # sampai 3 alasan teratas), bukan logika ad-hoc yang cuma ambil 1
-            # alasan dan bisa berbeda hasil dari logika di tempat lain.
             "warning_reason": validation_result.warning_reason,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -247,12 +240,6 @@ async def scan_prescription(
     else:
         pesan = f"Resep aman. {total_obat} obat berhasil diekstrak dan divalidasi."
 
-    # FIX (diagnosability lanjutan): kalau hasil ekstraksi berasal dari mock
-    # fallback (misal kuota Gemini habis), sebelumnya cuma kelihatan di field
-    # teknis `source` (mock_fallback_error_ClientError, dst) yang gak friendly
-    # dibaca orang awam. Sekarang ditambahkan catatan jelas di depan
-    # pesan utama, supaya kalau ini kejadian pas demo, langsung kelihatan
-    # jelas ini "mode simulasi", bukan data asli yang salah baca.
     source_value = getattr(extraction_result, "source", "gemini")
     if source_value.startswith("mock_fallback"):
         pesan = (
@@ -261,7 +248,7 @@ async def scan_prescription(
         )
 
     # Konversi path menjadi URL bertanda tangan yang valid untuk front-end
-    transient_image_url = _generate_transient_url(user_client, image_storage_path)
+    transient_image_url = _generate_transient_url(user_storage, image_storage_path)
 
     return ScanResponse(
         scan_id=scan_id,
@@ -270,7 +257,7 @@ async def scan_prescription(
         pesan=pesan,
         source=getattr(extraction_result, "source", "gemini"),
         timestamp=datetime.now(timezone.utc),
-        image_url=transient_image_url,  # Skema model kini menerima link aktif akses gambar
+        image_url=transient_image_url,
     )
 
 
@@ -289,6 +276,7 @@ async def get_scan_history(
     user_id, token = user_ctx
     try:
         user_client = get_supabase_client(token=token)
+        user_storage = get_user_storage_client(token)
 
         result = (
             user_client
@@ -311,9 +299,8 @@ async def get_scan_history(
             except Exception:
                 created_at = datetime.now(timezone.utc)
 
-            # Ubah path penyimpanan internal DB menjadi tautan publik temporer untuk tiap item
             db_image_path = row.get("image_url") or ""
-            transient_url = _generate_transient_url(user_client, db_image_path)
+            transient_url = _generate_transient_url(user_storage, db_image_path)
 
             items.append(
                 ScanHistoryItem(
@@ -322,9 +309,6 @@ async def get_scan_history(
                     is_warning=bool(row.get("is_warning", False)),
                     warning_reason=row.get("warning_reason"),
                     total_obat=total_obat,
-                    # FIX BUG-7: jangan fallback ke 1.0 (seolah confidence sempurna)
-                    # kalau datanya memang tidak ada - itu menyembunyikan kasus
-                    # data lama/rusak seolah-olah scan itu terpercaya penuh.
                     confidence_score=row.get("confidence_score"),
                     image_url=transient_url,
                 )

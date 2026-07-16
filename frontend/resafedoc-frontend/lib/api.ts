@@ -5,8 +5,6 @@ const BASE_URL = (
 ).replace(/\/$/, "");
 const API_V1 = `${BASE_URL}/api/v1`;
 
-// Pesan per kode status, selaras dengan Bagian 5.1 backend.md.
-// Dipakai sebagai fallback kalau backend tidak mengirim `detail` yang jelas.
 const STATUS_MESSAGES: Record<number, string> = {
   400: "Berkas kosong, atau gambar rusak dan tidak dapat dibaca.",
   401: "Sesi kamu sudah berakhir. Silakan masuk kembali.",
@@ -37,13 +35,12 @@ async function parseErrorResponse(response: Response): Promise<ApiError> {
       detail = body.detail;
     }
   } catch {
-    // Body bukan JSON atau kosong — pakai pesan default di atas.
   }
   return new ApiError(response.status, detail);
 }
 
 /**
- * POST /api/v1/scan — unggah gambar resep untuk diekstrak & divalidasi.
+ * POST /api/v1/scan - upload gambar resep untuk diekstrak & divalidasi.
  * Bisa memakan waktu beberapa detik hingga puluhan detik (timeout internal
  * ke Gemini 20 detik), jadi jangan pasang timeout fetch yang pendek di sisi ini.
  */
@@ -69,7 +66,6 @@ export async function scanPrescription(
   return response.json();
 }
 
-/** GET /api/v1/history — riwayat pemindaian milik pengguna yang sedang login. */
 export async function getHistory(
   accessToken: string,
   limit = 20,
@@ -94,7 +90,6 @@ export async function getHistory(
   return response.json();
 }
 
-/** GET /health — tidak butuh autentikasi, mengecek konektivitas ke Supabase. */
 export async function getHealth(): Promise<HealthResponse> {
   const response = await fetch(`${BASE_URL}/health`, { cache: "no-store" });
   if (!response.ok) {

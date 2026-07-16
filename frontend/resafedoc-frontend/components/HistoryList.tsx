@@ -21,7 +21,6 @@ export default function HistoryList({ items }: { items: HistoryItem[] }) {
       {items.map((item) => (
         <div key={item.id} className="card flex gap-4">
           {item.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={item.image_url}
               alt="Resep"
@@ -36,11 +35,10 @@ export default function HistoryList({ items }: { items: HistoryItem[] }) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  item.is_warning
-                    ? "bg-alert-light text-alert-dark"
-                    : "bg-teal-light text-teal-dark"
-                }`}
+                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${item.is_warning
+                  ? "bg-alert-light text-alert-dark"
+                  : "bg-teal-light text-teal-dark"
+                  }`}
               >
                 {item.is_warning ? "Perlu perhatian" : "Aman"}
               </span>

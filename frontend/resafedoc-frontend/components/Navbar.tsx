@@ -18,11 +18,10 @@ export default function Navbar({ userEmail }: { userEmail: string | null }) {
   const navLink = (href: string, label: string) => (
     <Link
       href={href}
-      className={`border-b-2 px-0.5 pb-0.5 text-sm font-medium transition-colors ${
-        pathname === href
-          ? "border-teal text-ink"
-          : "border-transparent text-muted hover:text-ink"
-      }`}
+      className={`border-b-2 px-0.5 pb-0.5 text-sm font-medium transition-colors ${pathname === href
+        ? "border-teal text-ink"
+        : "border-transparent text-muted hover:text-ink"
+        }`}
     >
       {label}
     </Link>
