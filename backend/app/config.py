@@ -1,4 +1,4 @@
-"""
+﻿"""
 config.py - Application settings untuk ResafeDoc Backend.
 Semua konfigurasi dibaca dari environment variables / .env file.
 JANGAN hardcode secrets di sini.
@@ -26,11 +26,10 @@ class Settings(BaseSettings):
 
     # Gemini AI
     gemini_api_key: str = ""
-    # Model ini diverifikasi dari dokumentasi resmi ai.google.dev/gemini-api/docs/models
     # (diakses 16 Juli 2026). gemini-3.5-flash = GA, multimodal (text+image), stable.
     gemini_model: str = "gemini-3.5-flash"
     # FIX (diagnosed dari laporan "kadang gemini kadang mock_fallback"):
-    # 200 detik terlalu ketat untuk panggilan vision/multimodal, yang biasanya
+    # 20 detik terlalu ketat untuk panggilan vision/multimodal, yang biasanya
     # lebih lambat dari panggilan text-only biasa. Dinaikkan jadi 20 detik.
     # Kalau masih sering timeout di production, cek juga apakah ada throttling
     # kuota dari Google (akan kelihatan jelas di log sekarang, lihat
