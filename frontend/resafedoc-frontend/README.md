@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ResafeDoc — Frontend
 
 Frontend Next.js (App Router + TypeScript + Tailwind) untuk backend FastAPI
@@ -68,3 +69,6 @@ components/
   indikator proses eksplisit selama menunggu.
 - Rate limit (`RATE_LIMIT_PER_USER`, default 10/jam) ditangani di backend;
   frontend hanya menampilkan pesan error 429 apa adanya.
+=======
+# ResafeDoc Frontend Documentation
+>>>>>>> caaaa45a47e57af5fb34d07029056217c2011acd
