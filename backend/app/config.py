@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # Gemini AI
     gemini_api_key: str = ""
     # (diakses 16 Juli 2026). gemini-3.5-flash = GA, multimodal (text+image), stable.
-    gemini_model: str = "gemini-3.5-flash"
+    gemini_model: str = "gemma-4-26b-a4b-it"
     # FIX (diagnosed dari laporan "kadang gemini kadang mock_fallback"):
     # 20 detik terlalu ketat untuk panggilan vision/multimodal, yang biasanya
     # lebih lambat dari panggilan text-only biasa. Dinaikkan jadi 20 detik.

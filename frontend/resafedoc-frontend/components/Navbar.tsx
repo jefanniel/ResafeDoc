@@ -38,7 +38,7 @@ export default function Navbar({ userEmail }: { userEmail: string | null }) {
 
         {userEmail && (
           <nav className="flex items-center gap-6">
-            {navLink("/scan", "Pindai")}
+            {navLink("/scan", "Scan")}
             {navLink("/history", "Riwayat")}
             <span className="hidden text-sm text-muted sm:inline">{userEmail}</span>
             <button

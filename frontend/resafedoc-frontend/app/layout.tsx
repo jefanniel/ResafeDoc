@@ -25,7 +25,7 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "ResafeDoc",
   description:
-    "Pindai resep dokter dan periksa dosis, frekuensi, serta kontraindikasi sebelum diminum.",
+    "Scan resep dokter dan periksa dosis, frekuensi, serta kontraindikasi sebelum diminum.",
 };
 
 export default async function RootLayout({

@@ -67,7 +67,7 @@ export default function HistoryPage() {
       <div>
         <h1 className="font-display text-2xl font-700 text-ink">Riwayat pemindaian</h1>
         <p className="mt-1.5 text-sm text-muted">
-          Daftar resep yang pernah kamu pindai, lengkap dengan status keamanannya.
+          Daftar resep yang pernah kamu scan, lengkap dengan status keamanannya.
         </p>
       </div>
 

@@ -192,7 +192,7 @@ def validate_dosage(item: ExtractionItem, obat_db: Obat) -> List[ValidationWarni
             warnings.append(
                 ValidationWarning(
                     level="warning",
-                    kode="FREKUENSI_MELEBIHI_BATAS",
+                    kode="FREKUENSI MELEBIHI BATAS!",
                     pesan=f"{nama}: Frekuensi resep {frekuensi_aktual}x/hari melebihi batas maksimal {obat_db.frekuensi_maks}x/hari.",
                     obat_terkait=nama,
                 )

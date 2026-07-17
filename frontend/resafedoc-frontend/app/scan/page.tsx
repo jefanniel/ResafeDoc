@@ -50,11 +50,11 @@ export default function ScanPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-700 text-ink">Pindai resep</h1>
+        <h1 className="font-display text-2xl font-700 text-ink">Scan resep</h1>
         <p className="mt-1.5 text-sm text-muted">
           Foto resep akan diekstrak lalu diperiksa terhadap dosis wajar, frekuensi, dan
-          kontraindikasi. Proses ini memanggil AI eksternal dan bisa memakan waktu hingga
-          sekitar 20 detik — biarkan halaman ini terbuka sampai selesai.
+          kontraindikasi. Proses ini memakan waktu hingga
+          sekitar 20 detik, biarkan halaman ini terbuka sampai selesai.
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export default function ScanPage() {
             aria-hidden="true"
           />
           <p className="text-sm text-ink">
-            Memeriksa resep — mengekstrak data lalu memvalidasi dosis dan kontraindikasi…
+            Memeriksa resep, mengekstrak data lalu memvalidasi dosis dan kontraindikasi…
           </p>
         </div>
       )}

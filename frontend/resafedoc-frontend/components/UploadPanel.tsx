@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { UploadCloud } from "lucide-react";
+import { Camera, ImageUp, UploadCloud } from "lucide-react";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
@@ -17,7 +17,8 @@ export default function UploadPanel({
   const [preview, setPreview] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   function acceptFile(candidate: File) {
     if (!ACCEPTED_TYPES.includes(candidate.type)) {
@@ -49,18 +50,37 @@ export default function UploadPanel({
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        onClick={() => inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-6 py-10 text-center transition-colors ${isDragging ? "border-teal bg-teal-light" : "border-line hover:border-teal/60"
+        className={`flex flex-col items-center justify-center rounded-md border-2 border-dashed px-6 py-10 text-center transition-colors ${isDragging ? "border-teal bg-teal-light" : "border-line"
           }`}
       >
+        {/* Input tersembunyi untuk mengambil dari galeri/berkas — tanpa
+            atribut capture, jadi selalu membuka file picker biasa di
+            semua perangkat. */}
         <input
-          ref={inputRef}
+          ref={galleryInputRef}
           type="file"
           accept={ACCEPTED_TYPES.join(",")}
           className="hidden"
           onChange={(e) => {
             const selected = e.target.files?.[0];
             if (selected) acceptFile(selected);
+          }}
+        />
+
+        {/* Input tersembunyi untuk ambil foto langsung — atribut capture
+            membuka kamera perangkat secara langsung di browser mobile
+            (Android/iOS). Di desktop tanpa kamera, atribut ini diabaikan
+            browser dan otomatis jatuh kembali ke file picker biasa, jadi
+            tombol ini tetap aman dipakai di semua perangkat. */}
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const captured = e.target.files?.[0];
+            if (captured) acceptFile(captured);
           }}
         />
 
@@ -78,19 +98,31 @@ export default function UploadPanel({
               Masukkan foto resep di sini
             </p>
             <p className="mt-1 text-sm text-muted">
-              Seret berkas, atau klik untuk memilih. JPEG / PNG / WebP, maks. 5 MB.
+              Ambil foto langsung, atau pilih dari galeri. JPEG / PNG / WebP, maks. 5 MB.
             </p>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                inputRef.current?.click();
-              }}
-              className="mt-4 rounded-md border border-line bg-paper px-5 py-2.5 text-sm font-600 text-ink transition-colors hover:bg-line/50"
-            >
-              Browse File
-            </button>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex items-center gap-2 rounded-md bg-teal px-5 py-2.5 text-sm font-600 text-paper transition-colors hover:bg-teal-dark"
+              >
+                <Camera className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                Ambil Foto
+              </button>
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                className="flex items-center gap-2 rounded-md border border-line bg-paper px-5 py-2.5 text-sm font-600 text-ink transition-colors hover:bg-line/50"
+              >
+                <ImageUp className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                Pilih dari Galeri
+              </button>
+            </div>
+
+            <p className="mt-3 text-xs text-muted">
+              Atau seret berkas ke area ini
+            </p>
           </>
         )}
       </div>
@@ -113,7 +145,8 @@ export default function UploadPanel({
             onClick={() => {
               setFile(null);
               setPreview(null);
-              if (inputRef.current) inputRef.current.value = "";
+              if (galleryInputRef.current) galleryInputRef.current.value = "";
+              if (cameraInputRef.current) cameraInputRef.current.value = "";
             }}
           >
             Ganti gambar

@@ -10,7 +10,7 @@ export default function AuthBackdrop() {
             Resafe<span className="text-teal">Doc</span>
           </span>
           <div className="flex gap-6 text-sm text-muted">
-            <span>Pindai</span>
+            <span>Scan</span>
             <span>Riwayat</span>
           </div>
         </div>

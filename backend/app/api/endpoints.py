@@ -177,7 +177,7 @@ async def scan_prescription(
             validation_result.warnings.append(
                 ValidationWarning(
                     level="warning",
-                    kode="CONFIDENCE_RENDAH",
+                    kode="CONFIDENCE RENDAH",
                     pesan="Tulisan resep terdeteksi kurang jelas atau buram. Harap lakukan konfirmasi manual ke apoteker atau dokter.",
                     obat_terkait="",
                 )

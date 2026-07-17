@@ -12,6 +12,7 @@ export default function HasilScanPage() {
   const router = useRouter();
   const [result, setResult] = useState<ScanResponse | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem(LAST_SCAN_STORAGE_KEY);
@@ -25,6 +26,25 @@ export default function HasilScanPage() {
       setNotFound(true);
     }
   }, []);
+
+  // Tutup lightbox dengan tombol Escape, dan kunci scroll halaman
+  // di belakangnya selagi lightbox terbuka.
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLightboxOpen(false);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [lightboxOpen]);
 
   if (notFound) {
     return (
@@ -65,7 +85,7 @@ export default function HasilScanPage() {
           onClick={() => router.push("/scan")}
           className="text-sm font-medium text-muted transition-colors hover:text-ink"
         >
-          ← Pindai lagi
+          ← Scan lagi
         </button>
       </div>
 
@@ -79,13 +99,24 @@ export default function HasilScanPage() {
 
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
           {result.image_url && (
-            <div className="relative shrink-0">
-              <img
-                src={result.image_url}
-                alt="Resep yang dipindai"
-                className="max-h-72 w-auto rounded-md border border-line object-contain"
-              />
-              <div className="absolute -right-4 -top-4">
+            <div className="relative w-full shrink-0 sm:w-56">
+              {/* Bingkai rasio tetap: foto resep punya rasio yang sangat beragam
+                  (potret HP, hasil scan lanskap, dsb). aspect-[3/4] memastikan
+                  setiap hasil selalu tampil dalam bingkai yang sama besarnya,
+                  tanpa terpotong (object-contain) dan tanpa melebarkan layout. */}
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                className="group block aspect-[3/4] w-full overflow-hidden rounded-md border border-line bg-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-teal"
+                aria-label="Lihat foto resep ukuran penuh"
+              >
+                <img
+                  src={result.image_url}
+                  alt="Resep yang dipindai"
+                  className="h-full w-full object-contain transition-transform duration-150 group-hover:scale-[1.03]"
+                />
+              </button>
+              <div className="absolute -right-3 -top-3">
                 <Stamp aman={result.validation.aman} />
               </div>
             </div>
@@ -113,6 +144,38 @@ export default function HasilScanPage() {
           <ExtractionTable items={result.extraction.items} />
         </div>
       </div>
+
+      {lightboxOpen && result.image_url && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Foto resep ukuran penuh"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 p-4 sm:p-8"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            className="absolute right-4 top-4 rounded-full bg-paper/90 p-2 text-ink transition-colors hover:bg-paper sm:right-8 sm:top-8"
+            aria-label="Tutup"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="M5 5l10 10M15 5L5 15"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+          <img
+            src={result.image_url}
+            alt="Resep yang dipindai (ukuran penuh)"
+            className="max-h-full max-w-full rounded-md object-contain"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
